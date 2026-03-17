@@ -1,46 +1,50 @@
-name: Deploy to GitHub Pages
+name: Deploy Astro Portfolio to GitHub Pages
 
 on:
-  # 每次推送到 `main` 分支时触发这个“工作流程”
-  # 如果你使用了别的分支名，请按需将 `main` 替换成你的分支名
   push:
-    branches: [ main ]
-  # 允许你在 GitHub 上的 Actions 标签中手动触发此“工作流程”
-  workflow_dispatch:
+    branches: [ main ]       # 每次 push 到 main 分支触发
+  workflow_dispatch:          # 允许手动触发
 
-# 允许 job 克隆 repo 并创建一个 page deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
 jobs:
-  build-and-deploy:
+  build:                     # Job key = build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 18    # 使用 Node 18
 
       - name: Install dependencies
-        run: npm install
+        run: npm install      # 安装 package.json 中依赖
 
-      - name: Build site
-        run: npx astro build
+      - name: Build Astro site
+        run: npx astro build  # 使用 npx 调用本地 CLI
 
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - name: Upload artifact for deploy
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: ./dist
 
-  deploy:
-    needs: build
+  deploy:                    # Job key = deploy
+    needs: build             # 依赖 build job
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: ./dist
+
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          folder: ./dist
