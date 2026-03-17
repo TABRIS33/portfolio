@@ -1,14 +1,10 @@
-name: Deploy to GitHub Pages
+name: Deploy Astro Portfolio to GitHub Pages
 
 on:
-  # 每次推送到 `main` 分支时触发这个“工作流程”
-  # 如果你使用了别的分支名，请按需将 `main` 替换成你的分支名
   push:
     branches: [ main ]
-  # 允许你在 GitHub 上的 Actions 标签中手动触发此“工作流程”
   workflow_dispatch:
 
-# 允许 job 克隆 repo 并创建一个 page deployment
 permissions:
   contents: read
   pages: write
@@ -18,22 +14,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24   # ✅ 选择 Astro 支持的版本 >=22.12.0
+          node-version: 24   # ✅ CI 上可用版本，支持 Astro >=22.12
 
       - name: Install Astro CLI globally
         run: npm install -g astro@latest
 
-      - name: Install dependencies
-        run: npm ci  # 安装项目依赖
+      - name: Install project dependencies
+        run: npm ci
 
       - name: Build Astro site
         run: astro build
+
+      - name: Upload artifact for deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: ./dist
 
   deploy:
     needs: build
