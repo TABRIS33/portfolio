@@ -11,24 +11,25 @@ permissions:
   id-token: write
 
 jobs:
-  build:                     # Job key = build
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18    # 使用 Node 18
+          node-version: 18
 
-      - name: Install dependencies
-        run: npm install      # 安装 package.json 中依赖
+      - name: Install Astro CLI globally
+        run: npm install -g astro@latest
+
+      - name: Install project dependencies
+        run: npm ci
 
       - name: Build Astro site
-        run: npx astro build  # 使用 npx 调用本地 CLI
+        run: astro build   # 全局 CLI 保证有执行权限
 
-      - name: Upload artifact for deploy
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist
